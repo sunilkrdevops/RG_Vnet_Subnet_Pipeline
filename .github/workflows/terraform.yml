@@ -26,6 +26,10 @@ jobs:
     # Feature branches + Pull Requests
     if: github.ref != 'refs/heads/main'
 
+    defaults:
+      run:
+        working-directory: ./parent_module
+
     steps:
 
       - name: Checkout
@@ -41,21 +45,23 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Check Terraform Directory
+        run: |
+          pwd
+          ls -la
+          terraform version
+
       - name: Terraform Format
         run: terraform fmt -check -recursive
-        working-directory: ./parent_module
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ./parent_module
 
       - name: Terraform Validate
         run: terraform validate
-        working-directory: ./parent_module
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
-        working-directory: ./parent_module
 
 
   terraform-apply:
@@ -65,6 +71,10 @@ jobs:
     # Apply ONLY after push to main
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
+    defaults:
+      run:
+        working-directory: ./parent_module
+
     steps:
 
       - name: Checkout
@@ -80,22 +90,23 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Check Terraform Directory
+        run: |
+          pwd
+          ls -la
+          terraform version
+
       - name: Terraform Format
         run: terraform fmt -check -recursive
-        working-directory: ./parent_module
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ./parent_module
 
       - name: Terraform Validate
         run: terraform validate
-        working-directory: ./parent_module
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
-        working-directory: ./parent_module
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
-        working-directory: ./parent_module
