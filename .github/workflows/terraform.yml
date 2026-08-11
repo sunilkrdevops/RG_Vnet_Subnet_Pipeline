@@ -23,12 +23,7 @@ jobs:
     name: Terraform Plan
     runs-on: ubuntu-latest
 
-    # Feature branches + Pull Requests
     if: github.ref != 'refs/heads/main'
-
-    defaults:
-      run:
-        working-directory: ./parent_module
 
     steps:
 
@@ -45,35 +40,24 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Check Terraform Directory
-        run: |
-          pwd
-          ls -la
-          terraform version
-
       - name: Terraform Format
-        run: terraform fmt -check -recursive
+        run: terraform fmt -check -recursive parent_module
 
       - name: Terraform Init
-        run: terraform init
+        run: terraform -chdir=parent_module init
 
       - name: Terraform Validate
-        run: terraform validate
+        run: terraform -chdir=parent_module validate
 
       - name: Terraform Plan
-        run: terraform plan -out=tfplan
+        run: terraform -chdir=parent_module plan -out=tfplan
 
 
   terraform-apply:
     name: Terraform Apply
     runs-on: ubuntu-latest
 
-    # Apply ONLY after push to main
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    defaults:
-      run:
-        working-directory: ./parent_module
 
     steps:
 
@@ -90,23 +74,17 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Check Terraform Directory
-        run: |
-          pwd
-          ls -la
-          terraform version
-
       - name: Terraform Format
-        run: terraform fmt -check -recursive
+        run: terraform fmt -check -recursive parent_module
 
       - name: Terraform Init
-        run: terraform init
+        run: terraform -chdir=parent_module init
 
       - name: Terraform Validate
-        run: terraform validate
+        run: terraform -chdir=parent_module validate
 
       - name: Terraform Plan
-        run: terraform plan -out=tfplan
+        run: terraform -chdir=parent_module plan -out=tfplan
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan# trigger
+        run: terraform -chdir=parent_module apply -auto-approve tfplan
